@@ -1,1 +1,1 @@
-from hue.color import RGB
+from .color import RGB
