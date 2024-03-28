@@ -205,8 +205,8 @@ fn lengthOfRayUntilIntersect(theta: Float64, x: Float64, y: Float64) -> Float64:
 
 
 fn maxChromaForLH(l: Float64, h: Float64) -> Float64:
-    var hRad = h / 360.0 * pi() * 2.0
-    var minLength = max_float64()
+    var hRad = h / 360.0 * pi * 2.0
+    var minLength = max_float64
     var bounds = getBounds(l)
 
     for i in range(len(bounds)):
