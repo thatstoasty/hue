@@ -1,5 +1,5 @@
-from hue.math import cube, clamp01, sq, pi, max_float64
-from hue.color import RGB
+from .math import cube, clamp01, sq, pi, max_float64
+from .color import RGB
 import math
 
 
