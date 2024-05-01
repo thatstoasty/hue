@@ -1,6 +1,6 @@
 from random import randn_float64
 from .color import Color, hsv, lab_to_hcl
-from .soft_palettegen import soft_palette_ex, SoftPaletteSettings
+from .soft_palettegen import soft_palette_ex, soft_palette_settings
 
 
 fn fast_happy_palette(colors_count: Int) -> List[Color]:
