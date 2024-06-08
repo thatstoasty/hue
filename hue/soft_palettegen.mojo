@@ -119,7 +119,7 @@ fn soft_palette_ex(colors_count: Int, settings: SoftPaletteSettings) raises -> L
 
 	# That would cause some infinite loops down there...
 	if len(samples) < colors_count:
-		raise Error(String("palettegen: more colors requested ") + colors_count + " than samples available " + len(samples) + " Your requested color count may be wrong, you might want to use many samples or your constraint fntion makes the valid color space too small")
+		raise Error(String("palettegen: more colors requested ") + str(colors_count) + " than samples available " + str(len(samples)) + " Your requested color count may be wrong, you might want to use many samples or your constraint fntion makes the valid color space too small")
 	elif len(samples) == colors_count:
 		return labs_2_cols(samples) # Oops?
 

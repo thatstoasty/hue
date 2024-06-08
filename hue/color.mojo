@@ -360,7 +360,7 @@ struct Color(Stringable):
         var cabmean = (cab1 + cab2) / 2
         var p: Float64 = 25.0
 
-        var g = 0.5 * (1 - math.sqrt(math.pow(cabmean, 7) / (math.pow(cabmean, 7) + math.pow(p, 7))))
+        var g = 0.5 * (1 - math.sqrt((cabmean ** 7) / ((cabmean ** 7) + (p ** 7))))
         var ap1 = (1 + g) * a1
         var ap2 = (1 + g) * a2
         var cp1 = math.sqrt(sq(ap1) + sq(b1))
@@ -406,7 +406,7 @@ struct Color(Stringable):
             2 * hpmean * pi / 180
         ) + 0.32 * math.cos((3 * hpmean + 6) * pi / 180) - 0.2 * math.cos((4 * hpmean - 63) * pi / 180)
         var deltaTheta = 30 * math.exp(-sq((hpmean - 275) / 25))
-        var rc = 2 * math.sqrt(math.pow(cpmean, 7) / (math.pow(cpmean, 7) + math.pow(p, 7)))
+        var rc = 2 * math.sqrt((cpmean ** 7) / ((cpmean ** 7) + (p ** 7)))
         var sl = 1 + (0.015 * sq(lpmean - 50)) / math.sqrt(20 + sq(lpmean - 50))
         var sc = 1 + 0.045 * cpmean
         var sh = 1 + 0.015 * cpmean * t
