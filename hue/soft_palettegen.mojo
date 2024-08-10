@@ -94,7 +94,7 @@ fn soft_palette_ex(colors_count: Int, settings: SoftPaletteSettings) raises -> L
 	@always_inline
 	fn check(col: lab_t) -> Bool:
 		var c = lab(col.L, col.A, col.B)
-		return c.is_valid() and settings.check_color.value()[](col.L, col.A, col.B)
+		return c.is_valid() and settings.check_color.value()(col.L, col.A, col.B)
 
 	# Sample the color space. These will be the points k-means is run on.
 	var dl = 0.05
