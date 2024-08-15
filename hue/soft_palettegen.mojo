@@ -91,7 +91,6 @@ fn soft_palette_ex(colors_count: Int, settings: SoftPaletteSettings) raises -> L
 	specify a CheckColor fntion."""
 
 	# Checks whether it's a valid RGB and also fulfills the potentially provided constraint.
-	@always_inline
 	fn check(col: lab_t) -> Bool:
 		var c = lab(col.L, col.A, col.B)
 		return c.is_valid() and settings.check_color.value()(col.L, col.A, col.B)
