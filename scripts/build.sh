@@ -50,7 +50,7 @@ build_dependencies() {
 }
 
 if [ "$1" == "package" ]; then
-    mojo package hue
+    mojo package src/hue
 else
     echo "Invalid argument. Use 'package'."
 fi

@@ -18,7 +18,6 @@ build:
 requirements:
   run:
     - max >= 24.5.0.dev2024083105
-    - gojo == 0.1.1
 
 # tests:
 #   - script:
