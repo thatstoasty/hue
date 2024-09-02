@@ -14,55 +14,42 @@ alias D50 = List[Float64](0.96422, 1.00000, 0.82521)
 
 
 @value
-struct Color(Stringable):
+@register_passable("trivial")
+struct Color(Stringable, Representable, CollectionElementNew):
     var R: Float64
     var G: Float64
     var B: Float64
 
+    fn __init__(inout self, other: Self):
+        self.R = other.R
+        self.G = other.G
+        self.B = other.B
+
     fn __str__(self) -> String:
+        return "Color(" + str(self.R) + ", " + str(self.G) + ", " + str(self.B) + ")"
+    
+    fn __repr__(self) -> String:
         return "Color(" + str(self.R) + ", " + str(self.G) + ", " + str(self.B) + ")"
 
     fn linear_rgb(self) -> (Float64, Float64, Float64):
-        """Converts the color into the linear Color space (see http://www.sjbrown.co.uk/2004/05/14/gamma-correct-rendering/).
+        """Converts the color into the linear color space (see http://www.sjbrown.co.uk/2004/05/14/gamma-correct-rendering/).
         """
-        var r = linearize(self.R)
-        var g = linearize(self.G)
-        var b = linearize(self.B)
-        return r, g, b
+        return linearize(self.R), linearize(self.G), linearize(self.B)
 
     fn xyz(self) -> (Float64, Float64, Float64):
-        var r: Float64
-        var g: Float64
-        var b: Float64
-        r, g, b = self.linear_rgb()
-
-        var x: Float64
-        var y: Float64
-        var z: Float64
-        x, y, z = linear_rgb_to_xyz(r, g, b)
-        return x, y, z
+        var rgb = self.linear_rgb()
+        return linear_rgb_to_xyz(rgb[0], rgb[1], rgb[2])
 
     fn Luv_white_ref(self, wref: List[Float64]) -> (Float64, Float64, Float64):
-        """Converts the given color to CIE L*u*v* space, taking into account a given reference white. (i.e. the monitor's white)
+        """Converts the given color to CIE L*u*v* space, taking into account
+        a given reference white. (i.e. the monitor's white)
         L* is in [0..1] and both u* and v* are in about [-1..1]."""
-        var x: Float64
-        var y: Float64
-        var z: Float64
-        x, y, z = self.xyz()
-
-        var l: Float64
-        var u: Float64
-        var v: Float64
-        l, u, v = xyz_to_Luv_white_ref(x, y, z, wref)
-        return l, u, v
+        var xyz= self.xyz()
+        return xyz_to_Luv_white_ref(xyz[0], xyz[1], xyz[2], wref)
 
     fn LuvLCh_white_ref(self, wref: List[Float64]) -> (Float64, Float64, Float64):
-        var l: Float64
-        var u: Float64
-        var v: Float64
-        l, u, v = self.Luv_white_ref(wref)
-
-        return Luv_To_LuvLCh(l, u, v)
+        var luv = self.Luv_white_ref(wref)
+        return Luv_To_LuvLCh(luv[0], luv[1], luv[2])
 
     fn HSLuv(self) -> (Float64, Float64, Float64):
         """Order: sColor -> Linear Color -> CIEXYZ -> CIELUV -> LuvLCh -> HSLuv.
@@ -70,30 +57,21 @@ struct Color(Stringable):
         color space. Hue in [0..360], a Saturation [0..1], and a Luminance
         (lightness) in [0..1].
         """
-        var wref: List[Float64] = hSLuvD65
-        var l: Float64
-        var c: Float64
-        var h: Float64
-        l, c, h = self.LuvLCh_white_ref(wref)
-
-        return LuvLch_to_HSLuv(l, c, h)
+        var lch = self.LuvLCh_white_ref(hSLuvD65)
+        return LuvLch_to_HSLuv(lch[0], lch[1], lch[2])
 
     fn distance_HSLuv(self, c2: Self) -> Float64:
-        var h1: Float64
-        var s1: Float64
-        var l1: Float64
-        var h2: Float64
-        var s2: Float64
-        var l2: Float64
-
-        h1, s1, l1 = self.HSLuv()
-        h2, s2, l2 = c2.HSLuv()
-
-        return math.sqrt(sq((h1 - h2) / 100.0) + sq(s1 - s2) + sq(l1 - l2))
+        var hsl = self.HSLuv()
+        var hsl2 = c2.HSLuv()
+        return math.sqrt(
+            sq((hsl[0] - hsl2[0]) / 100.0) + sq(hsl[1] - hsl2[1]) + sq(hsl[2] - hsl2[2])
+        )
 
     fn is_valid(self) -> Bool:
         """Checks whether the color exists in RGB space, i.e. all values are in [0..1]."""
-        return 0.0 <= self.R and self.R <= 1.0 and 0.0 <= self.G and self.G <= 1.0 and 0.0 <= self.B and self.B <= 1.0
+        return 0.0 <= self.R and self.R <= 1.0 and \
+        0.0 <= self.G and self.G <= 1.0 and \
+        0.0 <= self.B and self.B <= 1.0
 
     fn clamped(self) -> Self:
         """Clamps the color to the [0..1] range.  If the color is valid already, this is a no-op."""
@@ -108,15 +86,9 @@ struct Color(Stringable):
         """Computes the distance between two colors in linear RGB space.
         This is not useful for measuring how humans perceive color, but
         might be useful for other things, like dithering."""
-        var r1: Float64
-        var g1: Float64
-        var b1: Float64
-        r1, g1, b1 = self.linear_rgb()
-        var r2: Float64
-        var g2: Float64
-        var b2: Float64
-        r2, g2, b2 = c2.linear_rgb()
-        return math.sqrt(sq(r1 - r2) + sq(g1 - g2) + sq(b1 - b2))
+        var rgb = self.linear_rgb()
+        var rgb2 = c2.linear_rgb()
+        return math.sqrt(sq(rgb[0] - rgb2[0]) + sq(rgb[1] - rgb2[1]) + sq(rgb[2] - rgb2[2]))
 
     fn distance_riemersma(self, c2: Self) -> Float64:
         """Color distance algorithm developed by Thiadmer Riemersma.
@@ -124,9 +96,8 @@ struct Color(Stringable):
         This makes it both fast and accurate.
 
         Sources:
-
-        https:#www.compuphase.com/cmetric.htm
-        https:#github.com/lucasb-eyer/go-colorful/issues/52."""
+        https://www.compuphase.com/cmetric.htm
+        https://github.com/lucasb-eyer/go-colorful/issues/52."""
         var rAvg = (self.R + c2.R) / 2.0
         # Deltas
         var dR = self.R - c2.R
@@ -207,74 +178,47 @@ struct Color(Stringable):
         """Blends two colors in the Linear RGB color-space.
         Unlike BlendRgb, this will not produce dark color around the center.
         t == 0 results in c1, t == 1 results in c2."""
-        var r1: Float64
-        var g1: Float64
-        var b1: Float64
-        r1, g1, b1 = self.linear_rgb()
-
-        var r2: Float64
-        var g2: Float64
-        var b2: Float64
-        r2, g2, b2 = c2.linear_rgb()
+        var rgb = self.linear_rgb()
+        var rgb2 = c2.linear_rgb()
         return fast_linear_rgb(
-            r1 + t * (r2 - r1),
-            g1 + t * (g2 - g1),
-            b1 + t * (b2 - b1),
+            rgb[0] + t * (rgb2[0] - rgb[0]),
+            rgb[1] + t * (rgb2[1] - rgb[1]),
+            rgb[2] + t * (rgb2[2] - rgb[2]),
         )
 
     fn xyy(self) -> (Float64, Float64, Float64):
         """Converts the given color to CIE xyY space using D65 as reference white.
         (Note that the reference white is only used for black input.)
         x, y and Y are in [0..1]."""
-        var X: Float64
-        var Y: Float64
-        var Z: Float64
-        X, Y, Z = self.xyz()
-        return xyz_to_xyY(X, Y, Z)
+        var XYZ = self.xyz()
+        return xyz_to_xyY(XYZ[0], XYZ[1], XYZ[2])
 
     fn xyy_white_ref(self, wref: List[Float64]) -> (Float64, Float64, Float64):
         """Converts the given color to CIE xyY space, taking into account
         a given reference white. (i.e. the monitor's white)
         (Note that the reference white is only used for black input.)
         x, y and Y are in [0..1]."""
-        var X: Float64
-        var Y2: Float64
-        var Z: Float64
-        X, Y2, Z = self.xyz()
-        return xyz_to_xyY_white_ref(X, Y2, Z, wref)
+        var XY2Z = self.xyz()
+        return xyz_to_xyY_white_ref(XY2Z[0], XY2Z[1], XY2Z[2], wref)
 
     fn lab(self) -> (Float64, Float64, Float64):
         """Converts the given color to CIE L*a*b* space using D65 as reference white."""
-        var x: Float64
-        var y: Float64
-        var z: Float64
-        x, y, z = self.xyz()
-        return xyz_to_lab(x, y, z)
+        var xyz = self.xyz()
+        return xyz_to_lab(xyz[0], xyz[1], xyz[2])
 
     fn lab_white_ref(self, wref: List[Float64]) -> (Float64, Float64, Float64):
         """Converts the given color to CIE L*a*b* space, taking into account
         a given reference white. (i.e. the monitor's white)."""
-        var x: Float64
-        var y: Float64
-        var z: Float64
-        x, y, z = self.xyz()
-        return xyz_to_lab_white_ref(x, y, z, wref)
+        var xyz = self.xyz()
+        return xyz_to_lab_white_ref(xyz[0], xyz[1], xyz[2], wref)
 
     fn distance_lab(self, other: Self) -> Float64:
         """DistanceLab is a good measure of visual similarity between two colors!
         A result of 0 would mean identical colors, while a result of 1 or higher
         means the colors differ a lot."""
-        var l1: Float64
-        var a1: Float64
-        var b1: Float64
-        l1, a1, b1 = self.lab()
-
-        var l2: Float64
-        var a2: Float64
-        var b2: Float64
-        l2, a2, b2 = other.lab()
-
-        return math.sqrt(sq(l1 - l2) + sq(a1 - a2) + sq(b1 - b2))
+        var lab = self.lab()
+        var lab2 = other.lab()
+        return math.sqrt(sq(lab[0] - lab2[0]) + sq(lab[1] - lab2[1]) + sq(lab[2] - lab2[2]))
 
     fn distance_cie76(self, other: Self) -> Float64:
         """DistanceCIE76 is the same as DistanceLab."""
@@ -304,11 +248,11 @@ struct Color(Stringable):
         a2 *= 100.0
         b2 *= 100.0
 
-        var kl = 1.0  # 2.0 for textiles
-        var kc = 1.0
-        var kh = 1.0
-        var k1 = 0.045  # 0.048 for textiles
-        var k2 = 0.015  # 0.014 for textiles.
+        alias kl = 1.0  # 2.0 for textiles
+        alias kc = 1.0
+        alias kh = 1.0
+        alias k1 = 0.045  # 0.048 for textiles
+        alias k2 = 0.015  # 0.014 for textiles.
 
         var deltaL = l1 - l2
         var c1 = math.sqrt(sq(a1) + sq(b1))
@@ -317,7 +261,7 @@ struct Color(Stringable):
 
         # Not taking Sqrt here for stability, and it's unnecessary.
         var deltaHab2 = sq(a1 - a2) + sq(b1 - b2) - sq(deltaCab)
-        var sl = 1.0
+        alias sl = 1.0
         var sc = 1.0 + k1 * c1
         var sh = 1.0 + k2 * c1
 
@@ -336,24 +280,17 @@ struct Color(Stringable):
     fn distance_ciede2000klch(self, other: Self, kl: Float64, kc: Float64, kh: Float64) -> Float64:
         """DistanceCIEDE2000klch uses the Delta E 2000 formula with custom values
         for the weighting factors kL, kC, and kH."""
-        var l1: Float64
-        var a1: Float64
-        var b1: Float64
-        l1, a1, b1 = self.lab()
-
-        var l2: Float64
-        var a2: Float64
-        var b2: Float64
-        l2, a2, b2 = other.lab()
+        var lab = self.lab()
+        var lab2 = other.lab()
 
         # As with CIE94, we scale up the ranges of L,a,b beforehand and scale
         # them down again afterwards.
-        l1 *= 100.0
-        a1 *= 100.0
-        b1 *= 100.0
-        l2 *= 100.0
-        a2 *= 100.0
-        b2 *= 100.0
+        var l1 = lab[0] * 100.0
+        var a1 = lab[1] * 100.0
+        var b1 = lab[2] * 100.0
+        var l2 = lab2[0] * 100.0
+        var a2 = lab2[1] * 100.0
+        var b2 = lab2[2] * 100.0
 
         var cab1 = math.sqrt(sq(a1) + sq(b1))
         var cab2 = math.sqrt(sq(a2) + sq(b2))
@@ -425,57 +362,32 @@ struct Color(Stringable):
     fn blend_lab(self, c2: Self, t: Float64) -> Self:
         """BlendLab blends two colors in the L*a*b* color-space, which should result in a smoother blend.
         t == 0 results in c1, t == 1 results in c2."""
-        var l1: Float64
-        var a1: Float64
-        var b1: Float64
-        l1, a1, b1 = self.lab()
+        var LAB = self.lab()
+        var LAB2 = c2.lab()
 
-        var l2: Float64
-        var a2: Float64
-        var b2: Float64
-        l2, a2, b2 = c2.lab()
-
-        return lab(l1 + t * (l2 - l1), a1 + t * (a2 - a1), b1 + t * (b2 - b1))
+        return lab(LAB[0] + t * (LAB2[0] - LAB[0]), LAB[1] + t * (LAB2[1] - LAB[1]), LAB[2] + t * (LAB2[2] - LAB[2]))
 
     fn luv(self) -> (Float64, Float64, Float64):
         """Converts the given color to CIE L*u*v* space using D65 as reference white.
         L* is in [0..1] and both u* and v* are in about [-1..1]."""
-        var x: Float64
-        var y: Float64
-        var z: Float64
-        x, y, z = self.xyz()
-        return xyz_to_Luv(x, y, z)
+        var xyz = self.xyz()
+        return xyz_to_Luv(xyz[0], xyz[1], xyz[2])
 
     fn distance_luv(self, c2: Self) -> Float64:
         """DistanceLuv is a good measure of visual similarity between two colors!
         A result of 0 would mean identical colors, while a result of 1 or higher
         means the colors differ a lot."""
-        var l1: Float64
-        var u1: Float64
-        var v1: Float64
-        l1, u1, v1 = self.luv()
-
-        var l2: Float64
-        var u2: Float64
-        var v2: Float64
-        l2, u2, v2 = c2.luv()
-
-        return math.sqrt(sq(l1 - l2) + sq(u1 - u2) + sq(v1 - v2))
+        var luv = self.luv()
+        var luv2 = c2.luv()
+        return math.sqrt(sq(luv[0] - luv2[0]) + sq(luv[1] - luv2[1]) + sq(luv[2] - luv2[2]))
 
     fn blend_luv(self, c2: Self, t: Float64) -> Self:
         """BlendLuv blends two colors in the CIE-L*u*v* color-space, which should result in a smoother blend.
         t == 0 results in c1, t == 1 results in c2."""
-        var l1: Float64
-        var u1: Float64
-        var v1: Float64
-        l1, u1, v1 = self.luv()
+        var luv = self.luv()
+        var luv2 = c2.luv()
 
-        var l2: Float64
-        var u2: Float64
-        var v2: Float64
-        l2, u2, v2 = c2.luv()
-
-        return Luv(l1 + t * (l2 - l1), u1 + t * (u2 - u1), v1 + t * (v2 - v1))
+        return Luv(luv[0] + t * (luv2[0] - luv[0]), luv[1] + t * (luv2[1] - luv[1]), luv[2] + t * (luv2[2] - luv[2]))
 
     fn hcl(self) -> (Float64, Float64, Float64):
         """Converts the given color to HCL space using D65 as reference white.
@@ -505,7 +417,7 @@ struct Color(Stringable):
         var l2: Float64
         h2, c2, l2 = other.hcl()
 
-        # https:#github.com/lucasb-eyer/go-colorful/pull/60
+        # https://github.com/lucasb-eyer/go-colorful/pull/60
         if c1 <= 0.00015 and c2 >= 0.00015:
             h1 = h2
         elif c2 <= 0.00015 and c1 >= 0.00015:
@@ -523,27 +435,17 @@ struct Color(Stringable):
         """Converts the given color to LuvLCh space, taking into account
         a given reference white. (i.e. the monitor's white)
         h values are in [0..360], c and l values are in [0..1]."""
-        var l: Float64
-        var u: Float64
-        var v: Float64
-        l, u, v = self.Luv_white_ref(wref)
-        return Luv_To_LuvLCh(l, u, v)
+        var luv = self.Luv_white_ref(wref)
+        return Luv_To_LuvLCh(luv[0], luv[1], luv[2])
 
     fn blend_Luv_LCh(self, other: Self, t: Float64) -> Self:
         """BlendLuvLCh blends two colors in the cylindrical CIELUV color space.
         t == 0 results in c1, t == 1 results in c2."""
-        var l1: Float64
-        var c1: Float64
-        var h1: Float64
-        l1, c1, h1 = self.LuvLCh()
-
-        var l2: Float64
-        var c2: Float64
-        var h2: Float64
-        l2, c2, h2 = other.LuvLCh()
+        var lch = self.LuvLCh()
+        var lch2 = other.LuvLCh()
 
         # We know that h are both in [0..360]
-        return LuvLCh(l1 + t * (l2 - l1), c1 + t * (c2 - c1), interp_angle(h1, h2, t))
+        return LuvLCh(lch[0] + t * (lch2[0] - lch[0]), lch[1] + t * (lch2[1] - lch[1]), interp_angle(lch2[2], lch[2], t))
 
     fn HPLuv(self) -> (Float64, Float64, Float64):
         """HPLuv returns the Hue, Saturation and Luminance of the color in the HSLuv
@@ -552,11 +454,8 @@ struct Color(Stringable):
 
         Note that HPLuv can only represent pastel colors, and so the Saturation
         value could be much larger than 1 for colors it can't represent."""
-        var l: Float64
-        var c: Float64
-        var h: Float64
-        l, c, h = self.LuvLCh_white_ref(hSLuvD65)
-        return LuvLCh_to_HPLuv(l, c, h)
+        var lch = self.LuvLCh_white_ref(hSLuvD65)
+        return LuvLCh_to_HPLuv(lch[0], lch[1], lch[2])
 
 
 fn interp_angle(a0: Float64, a1: Float64, t: Float64) -> Float64:
@@ -571,7 +470,6 @@ fn interp_angle(a0: Float64, a1: Float64, t: Float64) -> Float64:
 ###########
 # From http://en.wikipedia.org/wiki/HSL_and_HSV
 # Note that h is in [0..360] and s,v in [0..1]
-
 
 fn hsv(h: Float64, s: Float64, v: Float64) -> Color:
     """Hsv creates a new Color given a Hue in [0..360], a Saturation and a Value in [0..1]."""
@@ -866,21 +764,15 @@ fn lab(l: Float64, a: Float64, b: Float64) -> Color:
     """Generates a color by using data given in CIE L*a*b* space using D65 as reference white.
     WARNING: many combinations of `l`, `a`, and `b` values do not have corresponding
     valid RGB values, check the FAQ in the README if you're unsure."""
-    var x: Float64
-    var y: Float64
-    var z: Float64
-    x, y, z = lab_to_xyz(l, a, b)
-    return xyz(x, y, z)
+    var XYZ = lab_to_xyz(l, a, b)
+    return xyz(XYZ[0], XYZ[1], XYZ[2])
 
 
 fn lab_white_ref(l: Float64, a: Float64, b: Float64, wref: List[Float64]) -> Color:
     """Generates a color by using data given in CIE L*a*b* space, taking
     into account a given reference white. (i.e. the monitor's white)."""
-    var x: Float64
-    var y: Float64
-    var z: Float64
-    x, y, z = lab_to_xyz_white_ref(l, a, b, wref)
-    return xyz(x, y, z)
+    var XYZ = lab_to_xyz_white_ref(l, a, b, wref)
+    return xyz(XYZ[0], XYZ[1], XYZ[2])
 
 
 # / L*u*v* #/
@@ -904,22 +796,16 @@ fn Luv(l: Float64, u: Float64, v: Float64) -> Color:
     L* is in [0..1] and both u* and v* are in about [-1..1]
     WARNING: many combinations of `l`, `u`, and `v` values do not have corresponding
     valid RGB values, check the FAQ in the README if you're unsure."""
-    var x: Float64
-    var y: Float64
-    var z: Float64
-    x, y, z = luv_to_xyz(l, u, v)
-    return xyz(x, y, z)
+    var XYZ = luv_to_xyz(l, u, v)
+    return xyz(XYZ[0], XYZ[1], XYZ[2])
 
 
 fn Luv_white_ref(l: Float64, u: Float64, v: Float64, wref: List[Float64]) -> Color:
     """Generates a color by using data given in CIE L*u*v* space, taking
     into account a given reference white. (i.e. the monitor's white)
     L* is in [0..1] and both u* and v* are in about [-1..1]."""
-    var x: Float64
-    var y: Float64
-    var z: Float64
-    x, y, z = luv_to_xyz_white_ref(l, u, v, wref)
-    return xyz(x, y, z)
+    var XYZ = luv_to_xyz_white_ref(l, u, v, wref)
+    return xyz(XYZ[0], XYZ[1], XYZ[2])
 
 
 ## HCL ##
@@ -960,11 +846,8 @@ fn hcl_white_ref(h: Float64, c: Float64, l: Float64, wref: List[Float64]) -> Col
     """Generates a color by using data given in HCL space, taking
     into account a given reference white. (i.e. the monitor's white)
     H values are in [0..360], C and L values are in [0..1]."""
-    var L: Float64
-    var a: Float64
-    var b: Float64
-    L, a, b = hcl_to_Lab(h, c, l)
-    return lab_white_ref(L, a, b, wref)
+    var Lab = hcl_to_Lab(h, c, l)
+    return lab_white_ref(Lab[0], Lab[1], Lab[2], wref)
 
 
 fn LuvLCh(l: Float64, c: Float64, h: Float64) -> Color:
@@ -987,11 +870,8 @@ fn LuvLCh_white_ref(l: Float64, c: Float64, h: Float64, wref: List[Float64]) -> 
     """Generates a color by using data given in LuvLCh space, taking
     into account a given reference white. (i.e. the monitor's white)
     h values are in [0..360], C and L values are in [0..1]."""
-    var L: Float64
-    var u: Float64
-    var v: Float64
-    L, u, v = LuvLChToLuv(l, c, h)
-    return Luv_white_ref(L, u, v, wref)
+    var Luv = LuvLChToLuv(l, c, h)
+    return Luv_white_ref(Luv[0], Luv[1], Luv[2], wref)
 
 
 fn clamped(color: Color) -> Color:
@@ -1117,9 +997,5 @@ fn linear_rgb(r: Float64, g: Float64, b: Float64) -> Color:
 
 
 fn xyz(x: Float64, y: Float64, z: Float64) -> Color:
-    var r: Float64
-    var g: Float64
-    var b: Float64
-
-    r, g, b = xyz_to_linear_rgb(x, y, z)
-    return linear_rgb(r, g, b)
+    var rgb = xyz_to_linear_rgb(x, y, z)
+    return linear_rgb(rgb[0], rgb[1], rgb[2])

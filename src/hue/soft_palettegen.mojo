@@ -36,13 +36,9 @@ fn in_stack(haystack: List[lab_t], upto: Int, needle: lab_t) -> Bool:
 
 
 fn labs_2_cols(labs: List[lab_t]) -> List[Color]:
-	var lab_count = len(labs)
-	var cols = List[Color](capacity=lab_count)
-	for _ in range(lab_count):
-		cols.append(Color(0.0, 0.0, 0.0))
-		
-	for i in range(lab_count):
-		cols[i] = lab(labs[i].L, labs[i].A, labs[i].B)
+	var cols = List[Color](capacity=labs.size)
+	for i in range(labs.size):
+		cols.append(lab(labs[i].L, labs[i].A, labs[i].B))
 
 	return cols
 
@@ -52,25 +48,25 @@ alias CheckColorFn = fn (l: Float64, a: Float64, b: Float64) -> Bool
 
 @value
 struct SoftPaletteSettings:
-    # A fntion which can be used to restrict the allowed color-space.
-    var check_color: Optional[CheckColorFn]
+	var check_color: Optional[CheckColorFn]
+	"""A function which can be used to restrict the allowed color-space."""
 
-    # The higher, the better quality but the slower. Usually two figures.
-    var iterations: Int
+	var iterations: Int
+	"""The higher, the better quality but the slower. Usually two figures."""
 
-    # Use up to 160000 or 8000 samples of the L*a*b* space (and thus calls to CheckColor).
-    # Set this to true only if your CheckColor shapes the Lab space weirdly.
-    var many_samples: Bool
+	var many_samples: Bool
+	"""Use up to 160000 or 8000 samples of the L*a*b* space (and thus calls to CheckColor).
+	Set this to true only if your CheckColor shapes the Lab space weirdly."""
 
 
-# That's faster than using colorful's DistanceLab since we would have to
-# convert back and forth for that. Here is no conversion.
 fn lab_dist(lab1: lab_t, lab2: lab_t) -> Float64:
+	"""That's faster than using colorful's DistanceLab since we would have to
+	convert back and forth for that. Here is no conversion."""
 	return math.sqrt(sq(lab1.L-lab2.L) + sq(lab1.A-lab2.A) + sq(lab1.B-lab2.B))
 
 
-# A wrapper which uses common parameters.
 fn soft_palette(colors_count: Int) raises -> List[Color]:
+	"""A wrapper which uses common parameters."""
 	return soft_palette_ex(colors_count, SoftPaletteSettings(None, 50, False))
 
 
@@ -84,7 +80,7 @@ fn lab_eq(lab1: lab_t, lab2: lab_t) -> Bool:
 
 
 fn soft_palette_ex(colors_count: Int, settings: SoftPaletteSettings) raises -> List[Color]:
-	"""Yeah, windows-stype Foo, FooEx, screw you golang...
+	"""Yeah, windows-stype Foo, FooEx...
 	Uses K-means to cluster the color-space and return the means of the clusters
 	as a new palette of distinctive colors. Falls back to K-medoid if the mean
 	happens to fall outside of the color-space, which can only happen if you
@@ -118,19 +114,18 @@ fn soft_palette_ex(colors_count: Int, settings: SoftPaletteSettings) raises -> L
 
 	# That would cause some infinite loops down there...
 	if len(samples) < colors_count:
-		raise Error(String("palettegen: more colors requested ") + str(colors_count) + " than samples available " + str(len(samples)) + " Your requested color count may be wrong, you might want to use many samples or your constraint fntion makes the valid color space too small")
+		raise Error(String("palettegen: more colors requested ") + \
+			str(colors_count) + " than samples available " + \
+			str(len(samples)) + " Your requested color count may be wrong, " + \
+			"you might want to use many samples or your constraint fntion makes " + \
+			"the valid color space too small")
 	elif len(samples) == colors_count:
 		return labs_2_cols(samples) # Oops?
 
 	# We take the initial means out of the samples, so they are in fact medoids.
 	# This helps us avoid infinite loops or arbitrary cutoffs with too restrictive constraints.
 	var means = List[lab_t](capacity=colors_count)
-	for _ in range(colors_count):
-		means.append(lab_t(0.0, 0.0, 0.0))
-	
-	var i = 0
-	while i < colors_count:
-		i += 1
+	for i in range(colors_count):
 		means[i] = samples[int(random_si64(0, len(samples)))]
 		while in_stack(means, i, means[i]):
 			means[i] = samples[int(random_si64(0, len(samples)))]

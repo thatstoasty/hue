@@ -11,7 +11,7 @@ fn fast_warm_color() -> Color:
 
 fn warm_color() -> Color:
     """Creates a random dark, "warm" color through restricted HCL space.
-    This is slower than FastWarmColor but will likely give you colors which have
+    This is slower than `fast_warm_color` but will likely give you colors which have
     the same "warmness" if you run it many times."""
     var c = random_warm()
     while not c.is_valid():
