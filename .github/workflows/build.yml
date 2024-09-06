@@ -52,4 +52,6 @@ jobs:
         env:
           PREFIX_API_KEY: ${{ secrets.PREFIX_API_KEY }}
         run: |
+          source $HOME/.bash_profile
+          export PATH=$HOME/.pixi/bin:$PATH
           magic run publish
