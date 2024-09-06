@@ -38,6 +38,7 @@ jobs:
       - name: Build package for target platform
         env:
           TARGET_PLATFORM: ${{ matrix.target }}
+          CONDA_BLD_PATH: ${{ runner.workspace }}/.rattler
 
         run: |
           source $HOME/.bash_profile
