@@ -33,20 +33,22 @@ jobs:
       - name: Install magic and pixi
         run: |
           curl -ssL https://magic.modular.com | bash
-          curl -fsSL https://pixi.sh/install.sh | bash
+        #   curl -fsSL https://pixi.sh/install.sh | bash
 
       - name: Build package for target platform
         env:
           TARGET_PLATFORM: ${{ matrix.target }}
+          PREFIX_API_KEY: ${{ secrets.PREFIX_API_KEY }}
           CONDA_BLD_PATH: ${{ runner.workspace }}/.rattler
 
         run: |
           source $HOME/.bash_profile
-          source $HOME/.bashrc
-          export PATH=$HOME/.pixi/bin:$PATH
-          /home/runner/.pixi/bin/pixi global install rattler-build
+          magic global install rattler-build
           magic run build --target-platform=$TARGET_PLATFORM
           magic run publish
+        #   source $HOME/.bashrc
+        #   export PATH=$HOME/.pixi/bin:$PATH
+        #   /home/runner/.pixi/bin/pixi global install rattler-build
 
     #   - name: Upload all packages
     #     # do not upload on PR
