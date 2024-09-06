@@ -9,11 +9,9 @@ fn fast_happy_palette(count: Int) -> List[Color]:
     If you've got time to spare, use Lab (the non-fast below)."""
     var colors = List[Color](capacity=count)
     for i in range(count):
-        colors.append(hsv(
-            Float64(i) * (360.0 / Float64(count)), 
-            0.8 + randn_float64() * 0.2,
-            0.65 + randn_float64() * 0.2
-        ))
+        colors.append(
+            hsv(Float64(i) * (360.0 / Float64(count)), 0.8 + randn_float64() * 0.2, 0.65 + randn_float64() * 0.2)
+        )
 
     return colors
 

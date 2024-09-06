@@ -16,11 +16,9 @@ fn fast_warm_palette(count: Int) -> List[Color]:
     """
     var colors = List[Color](capacity=count)
     for i in range(count):
-        colors.append(hsv(
-            Float64(i) * (360.0 / Float64(count)),
-            0.55 + randn_float64() * 0.2,
-            0.35 + randn_float64() * 0.2
-        ))
+        colors.append(
+            hsv(Float64(i) * (360.0 / Float64(count)), 0.55 + randn_float64() * 0.2, 0.35 + randn_float64() * 0.2)
+        )
 
     return colors
 

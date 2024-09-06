@@ -27,7 +27,7 @@ struct Color(Stringable, Representable, CollectionElementNew):
 
     fn __str__(self) -> String:
         return "Color(" + str(self.R) + ", " + str(self.G) + ", " + str(self.B) + ")"
-    
+
     fn __repr__(self) -> String:
         return "Color(" + str(self.R) + ", " + str(self.G) + ", " + str(self.B) + ")"
 
@@ -44,7 +44,7 @@ struct Color(Stringable, Representable, CollectionElementNew):
         """Converts the given color to CIE L*u*v* space, taking into account
         a given reference white. (i.e. the monitor's white)
         L* is in [0..1] and both u* and v* are in about [-1..1]."""
-        var xyz= self.xyz()
+        var xyz = self.xyz()
         return xyz_to_Luv_white_ref(xyz[0], xyz[1], xyz[2], wref)
 
     fn LuvLCh_white_ref(self, wref: List[Float64]) -> (Float64, Float64, Float64):
@@ -63,15 +63,11 @@ struct Color(Stringable, Representable, CollectionElementNew):
     fn distance_HSLuv(self, c2: Self) -> Float64:
         var hsl = self.HSLuv()
         var hsl2 = c2.HSLuv()
-        return math.sqrt(
-            sq((hsl[0] - hsl2[0]) / 100.0) + sq(hsl[1] - hsl2[1]) + sq(hsl[2] - hsl2[2])
-        )
+        return math.sqrt(sq((hsl[0] - hsl2[0]) / 100.0) + sq(hsl[1] - hsl2[1]) + sq(hsl[2] - hsl2[2]))
 
     fn is_valid(self) -> Bool:
         """Checks whether the color exists in RGB space, i.e. all values are in [0..1]."""
-        return 0.0 <= self.R and self.R <= 1.0 and \
-        0.0 <= self.G and self.G <= 1.0 and \
-        0.0 <= self.B and self.B <= 1.0
+        return 0.0 <= self.R and self.R <= 1.0 and 0.0 <= self.G and self.G <= 1.0 and 0.0 <= self.B and self.B <= 1.0
 
     fn clamped(self) -> Self:
         """Clamps the color to the [0..1] range.  If the color is valid already, this is a no-op."""
@@ -297,7 +293,7 @@ struct Color(Stringable, Representable, CollectionElementNew):
         var cabmean = (cab1 + cab2) / 2
         var p: Float64 = 25.0
 
-        var g = 0.5 * (1 - math.sqrt((cabmean ** 7) / ((cabmean ** 7) + (p ** 7))))
+        var g = 0.5 * (1 - math.sqrt((cabmean**7) / ((cabmean**7) + (p**7))))
         var ap1 = (1 + g) * a1
         var ap2 = (1 + g) * a2
         var cp1 = math.sqrt(sq(ap1) + sq(b1))
@@ -343,7 +339,7 @@ struct Color(Stringable, Representable, CollectionElementNew):
             2 * hpmean * pi / 180
         ) + 0.32 * math.cos((3 * hpmean + 6) * pi / 180) - 0.2 * math.cos((4 * hpmean - 63) * pi / 180)
         var deltaTheta = 30 * math.exp(-sq((hpmean - 275) / 25))
-        var rc = 2 * math.sqrt((cpmean ** 7) / ((cpmean ** 7) + (p ** 7)))
+        var rc = 2 * math.sqrt((cpmean**7) / ((cpmean**7) + (p**7)))
         var sl = 1 + (0.015 * sq(lpmean - 50)) / math.sqrt(20 + sq(lpmean - 50))
         var sc = 1 + 0.045 * cpmean
         var sh = 1 + 0.015 * cpmean * t
@@ -445,7 +441,9 @@ struct Color(Stringable, Representable, CollectionElementNew):
         var lch2 = other.LuvLCh()
 
         # We know that h are both in [0..360]
-        return LuvLCh(lch[0] + t * (lch2[0] - lch[0]), lch[1] + t * (lch2[1] - lch[1]), interp_angle(lch2[2], lch[2], t))
+        return LuvLCh(
+            lch[0] + t * (lch2[0] - lch[0]), lch[1] + t * (lch2[1] - lch[1]), interp_angle(lch2[2], lch[2], t)
+        )
 
     fn HPLuv(self) -> (Float64, Float64, Float64):
         """HPLuv returns the Hue, Saturation and Luminance of the color in the HSLuv
@@ -470,6 +468,7 @@ fn interp_angle(a0: Float64, a1: Float64, t: Float64) -> Float64:
 ###########
 # From http://en.wikipedia.org/wiki/HSL_and_HSV
 # Note that h is in [0..360] and s,v in [0..1]
+
 
 fn hsv(h: Float64, s: Float64, v: Float64) -> Color:
     """Hsv creates a new Color given a Hue in [0..360], a Saturation and a Value in [0..1]."""
