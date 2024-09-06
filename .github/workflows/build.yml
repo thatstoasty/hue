@@ -42,6 +42,7 @@ jobs:
         run: |
           source $HOME/.bash_profile
           source $HOME/.bashrc
+          export PATH=$HOME/.pixi/bin:$PATH
           /home/runner/.pixi/bin/pixi global install rattler-build
           magic run build --target-platform=$TARGET_PLATFORM
 
