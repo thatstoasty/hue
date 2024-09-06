@@ -30,9 +30,11 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Install magic
+      - name: Install magic and rattler
         run: |
           curl -ssL https://magic.modular.com | bash
+          source $HOME/.bash_profile
+          magic global install rattler-build
 
       - name: Build package for target platform
         env:
@@ -40,7 +42,7 @@ jobs:
 
         run: |
           source $HOME/.bash_profile
-          magic run build
+          magic run build --target-platform=$TARGET_PLATFORM
 
       - name: Upload all packages
         # do not upload on PR
