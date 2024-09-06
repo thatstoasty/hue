@@ -16,7 +16,7 @@ jobs:
       matrix:
         include:
           - { target: linux-64, os: ubuntu-latest }
-        #   - { target: osx-arm64, os: macos-14 }
+          - { target: osx-arm64, os: macos-14 }
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
@@ -30,10 +30,9 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Install magic and pixi
+      - name: Install magic
         run: |
           curl -ssL https://magic.modular.com | bash
-        #   curl -fsSL https://pixi.sh/install.sh | bash
 
       - name: Build package for target platform
         env:
@@ -43,24 +42,13 @@ jobs:
 
         run: |
           source $HOME/.bash_profile
-          # Temporary solution until I find a better way to install rattler
+
+          # Temporary method to fetch the rattler binary.
           RATTLER_BINARY="rattler-build-aarch64-apple-darwin"
           if [[ $TARGET_PLATFORM == "linux-64" ]]; then RATTLER_BINARY="rattler-build-x86_64-unknown-linux-musl"; fi
           curl -SL --progress-bar https://github.com/prefix-dev/rattler-build/releases/latest/download/${RATTLER_BINARY} -o rattler-build
           chmod +x rattler-build
-          echo $PATH
+
+          # Build and push
           magic run build --target-platform=$TARGET_PLATFORM
           magic run publish
-        #   source $HOME/.bashrc
-        #   export PATH=$HOME/.pixi/bin:$PATH
-        #   /home/runner/.pixi/bin/pixi global install rattler-build
-
-    #   - name: Upload all packages
-    #     # do not upload on PR
-    #     if: github.event_name == 'push'
-    #     env:
-    #       PREFIX_API_KEY: ${{ secrets.PREFIX_API_KEY }}
-    #     run: |
-    #       source $HOME/.bash_profile
-    #       export PATH=$HOME/.pixi/bin:$PATH
-    #       magic run publish
