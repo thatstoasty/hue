@@ -43,7 +43,12 @@ jobs:
 
         run: |
           source $HOME/.bash_profile
-          magic global install rattler-build
+          # Temporary solution until I find a better way to install rattler
+          if [[ $TARGET_PLATFORM == "linux-64" ]]; then
+            curl -SL --progress-bar https://github.com/prefix-dev/rattler-build/releases/latest/download/rattler-build-x86_64-unknown-linux-musl
+          else
+            curl -SL --progress-bar https://github.com/prefix-dev/rattler-build/releases/latest/download/rattler-build-aarch64-apple-darwin
+          fi
           magic run build --target-platform=$TARGET_PLATFORM
           magic run publish
         #   source $HOME/.bashrc
