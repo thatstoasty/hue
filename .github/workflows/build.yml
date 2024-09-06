@@ -30,9 +30,10 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Install magic
+      - name: Install magic and pixi
         run: |
           curl -ssL https://magic.modular.com | bash
+          curl -fsSL https://pixi.sh/install.sh | bash
 
       - name: Build package for target platform
         env:
@@ -40,7 +41,7 @@ jobs:
 
         run: |
           source $HOME/.bash_profile
-          magic global install rattler-build
+          pixi global install rattler-build
           magic run build --target-platform=$TARGET_PLATFORM
 
       - name: Upload all packages
