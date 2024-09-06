@@ -41,6 +41,7 @@ jobs:
 
         run: |
           source $HOME/.bash_profile
+          source $HOME/.bashrc
           pixi global install rattler-build
           magic run build --target-platform=$TARGET_PLATFORM
 
