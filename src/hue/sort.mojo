@@ -20,7 +20,7 @@
 # 	for e.parent != e:
 # 		e.parent = e.parent.parent
 # 		e = e.parent
-	
+
 # 	return e
 
 
@@ -32,7 +32,7 @@
 # 	e2Root = e2.find()
 # 	if e1Root == e2Root:
 # 		return
-	
+
 
 # 	# Create a union by making the shorter tree point to the root of the
 # 	# larger tree.
@@ -44,7 +44,6 @@
 # 	default:
 # 		e2Root.parent = e1Root
 # 		e1Root.rank++
-	
 
 
 # # An edgeIdxs describes an edge in a graph or tree.  The vertices in the edge
@@ -64,8 +63,8 @@
 # 	for u = 0; u < nc-1; u++:
 # 		for v = u + 1; v < nc; v++:
 # 			m[edgeIdxs{u, v] = cs[u].DistanceCIEDE2000(cs[v])
-		
-	
+
+
 # 	return m
 
 
@@ -74,7 +73,7 @@
 # 	es = make([]edgeIdxs, 0, len(m))
 # 	for uv = range m:
 # 		es = append(es, uv)
-	
+
 # 	sort.Slice(es, fn(i, j int) bool:
 # 		return m[es[i]] < m[es[j]]
 # 	)
@@ -89,7 +88,7 @@
 # 	elts = make([]*element, nc)
 # 	for i = range elts:
 # 		elts[i] = newElement()
-	
+
 
 # 	# Run Kruskal's algorithm to construct a minimal spanning tree.
 # 	mst = make(map[edgeIdxs]struct{, nc)
@@ -97,11 +96,11 @@
 # 		u, v = uv[0], uv[1]
 # 		if elts[u].find() == elts[v].find():
 # 			continue # Same set: edge would introduce a cycle.
-		
+
 # 		mst[uv] = struct{{
 # 		mst[edgeIdxs{v, u] = struct{{
 # 		union(elts[u], elts[v])
-	
+
 # 	return mst
 
 
@@ -112,11 +111,11 @@
 # 	for uv = range mst:
 # 		u, v = uv[0], uv[1]
 # 		neighs[u] = append(neighs[u], v)
-	
+
 # 	for u, vs = range neighs:
 # 		sort.Ints(vs)
 # 		copy(neighs[u], vs)
-	
+
 
 # 	# Walk the tree from a given vertex.
 # 	order = make([]int, 0, len(neighs))
@@ -131,9 +130,8 @@
 # 		for _, c = range neighs[r]:
 # 			if !visited[c]:
 # 				walkFrom(c)
-			
-		
-	
+
+
 # 	walkFrom(root)
 # 	return order
 
@@ -147,7 +145,7 @@
 # 	if len(cs) < 2:
 # 		copy(newCs, cs)
 # 		return newCs
-	
+
 
 # 	# Compute the distance from each color to every other color.
 # 	dists = allToAllDistancesCIEDE2000(cs)
@@ -168,8 +166,7 @@
 # 		if d < light:
 # 			dIdx = i
 # 			light = d
-		
-	
+
 
 # 	# Traverse the tree starting from the darkest color.
 # 	idxs = traverseMST(mst, dIdx)
@@ -177,5 +174,5 @@
 # 	# Convert the index list to a list of colors, overwriting the input.
 # 	for i, idx = range idxs:
 # 		newCs[i] = cs[idx]
-	
+
 # 	return newCs

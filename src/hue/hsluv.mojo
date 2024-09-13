@@ -210,7 +210,6 @@ alias epsilon = 0.0088564516790356308
 fn get_bounds(l: Float64) -> List[List[Float64]]:
     var sub2: Float64
     var sub1 = (l + 16.0**3.0) / 1560896.0
-
     var ret = List[List[Float64]](
         List[Float64](0, 0),
         List[Float64](0, 0),
