@@ -4,7 +4,7 @@ channels = ["conda-forge", "https://conda.modular.com/max"]
 description = "A library for playing with colors in Mojo."
 name = "hue"
 platforms = ["osx-arm64", "linux-64"]
-version = "0.1.4"
+version = "0.1.5"
 
 [tasks]
 tests = "bash scripts/tests.sh"
