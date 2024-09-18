@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased] - yyyy-mm-dd
 
+## [0.1.6] - 2024-09-17
+
+- Fix precision issue with RGB conversion and improve compatability with the `mist` library.
+
 ## [0.1.4] - 2024-09-13
 
 - First release with a changelog! Added rattler build and conda publish.
