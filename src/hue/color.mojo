@@ -40,8 +40,8 @@ struct Color(Stringable, Representable, CollectionElementNew):
         return "Color(" + str(self.R) + ", " + str(self.G) + ", " + str(self.B) + ")"
 
     fn hex(self) -> UInt32:
-        """Returns the color as a 32-bit unsigned integer in the form 0xRRGGBB."""
-        return (self.R * 65536 + self.G * 256 + self.B).cast[DType.uint32]()
+        """Converts red, green, and blue values to a number in hexadecimal format."""
+        return (int(self.R) << 16) | (int(self.G) << 8) | int(self.B)
 
     fn linear_rgb(self) -> (Float64, Float64, Float64):
         """Converts the color into the linear color space (see http://www.sjbrown.co.uk/2004/05/14/gamma-correct-rendering/).
