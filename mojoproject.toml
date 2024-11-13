@@ -5,11 +5,29 @@ description = "A library for playing with colors in Mojo."
 name = "hue"
 platforms = ["osx-arm64", "linux-64"]
 version = "0.1.6"
+license = "MIT"
+license-file = "LICENSE"
+homepage = "https://github.com/thatstoasty/hue"
+repository = "https://github.com/thatstoasty/hue"
+
 
 [tasks]
-tests = "bash scripts/tests.sh"
-build = { cmd = "rattler-build build -r src -c https://conda.modular.com/max -c conda-forge --skip-existing=all", env = {MODULAR_MOJO_NIGHTLY_IMPORT_PATH = "$CONDA_PREFIX/lib/mojo"} }
-publish = { cmd = "bash scripts/publish.sh", env = { PREFIX_API_KEY = "$PREFIX_API_KEY" } }
+tests = "python scripts/util.py run tests"
+benchmarks = "python scripts/util.py run benchmarks"
+examples = "python scripts/util.py run examples"
+template = "python scripts/util.py templater"
+build = { cmd = "python scripts/util.py build", env = { MODULAR_MOJO_IMPORT_PATH = "$CONDA_PREFIX/lib/mojo" } }
+publish = { cmd = "python scripts/util.py publish", env = { PREFIX_API_KEY = "$PREFIX_API_KEY" } }
+bp = { depends_on=["build", "publish"] }
 
 [dependencies]
 max = ">=24.5.0,<25"
+
+[feature.nightly]
+channels = ["conda-forge", "https://conda.modular.com/max-nightly"]
+
+[feature.nightly.dependencies]
+max = ">=24.6.0.dev2024111205"
+
+[environments]
+nightly = ["nightly"]
